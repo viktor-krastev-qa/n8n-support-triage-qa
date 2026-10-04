@@ -1,0 +1,133 @@
+{
+  "name": "Support Triage QA",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "support-triage-qa",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook",
+      "name": "Support Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "support-triage-qa"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const TEST_MODE = false;\nconst input = $input.first().json;\nconst b = input.body;\nconst errors = [];\nconst isObject = b !== null && typeof b === 'object' && !Array.isArray(b);\nif (!isObject) errors.push('body_must_be_object');\nif (isObject) {\n  const allowed = ['ticket_id','email','message'];\n  if (TEST_MODE) allowed.push('simulate');\n  if (Object.keys(b).some(k => !allowed.includes(k))) errors.push('unknown_field');\n  if (typeof b.ticket_id !== 'string' || !/^TKT-[0-9]{3}$/.test(b.ticket_id)) errors.push('invalid_ticket_id');\n  if (typeof b.email !== 'string' || b.email.length > 254 || !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(b.email)) errors.push('invalid_email');\n  if (typeof b.message !== 'string' || b.message.trim().length < 10 || b.message.trim().length > 2000) errors.push('invalid_message');\n  if (TEST_MODE && b.simulate !== undefined && !['normal','unavailable','invalid_json','invalid_label','invalid_confidence'].includes(b.simulate)) errors.push('invalid_simulation');\n}\nif (errors.length) return [{json:{ready:true,http_status:400,response:{ok:false,error:'validation_error',details:errors}}}];\nreturn [{json:{ready:false,ticket:{ticket_id:b.ticket_id,email:b.email.trim().toLowerCase(),message:b.message.trim()},simulate:TEST_MODE ? (b.simulate || 'normal') : 'normal'}}];\n"
+      },
+      "id": "validate",
+      "name": "Validate Input",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        260,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const item = $input.first().json;\nif (item.ready) return [{json:item}];\nif (item.simulate === 'unavailable') return [{json:{...item,provider_error:'simulated_unavailable'}}];\nif (item.simulate === 'invalid_json') return [{json:{...item,raw_output:'not-json'}}];\nconst text = item.ticket.message.toLowerCase();\n// Deterministic stub, not an AI model. Mixed categories use explicit precedence.\nlet category = 'general';\nif (/\\b(refund|invoice|payment|charged)\\b/.test(text)) category = 'billing';\nelse if (/\\b(error|crash|login|password)\\b/.test(text)) category = 'technical';\nelse if (/\\b(shipping|delivery|parcel|tracking)\\b/.test(text)) category = 'shipping';\nconst priority = /\\b(urgent|immediately)\\b/.test(text) ? 'high' : 'normal';\nconst confidence = category === 'general' ? 0.4 : 0.9;\nconst output = {category,priority,confidence};\nif (item.simulate === 'invalid_label') output.category = 'admin';\nif (item.simulate === 'invalid_confidence') output.confidence = 5;\nreturn [{json:{...item,raw_output:JSON.stringify(output)}}];\n"
+      },
+      "id": "simulate",
+      "name": "Simulated Classifier",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        520,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const item = $input.first().json;\nif (item.ready) return [{json:item}];\nif (item.provider_error) return [{json:{ready:true,http_status:503,response:{ok:false,error:'classifier_unavailable',ticket_id:item.ticket.ticket_id}}}];\nlet output;\ntry { output = JSON.parse(item.raw_output); } catch { output = null; }\nconst valid = output && typeof output === 'object' && !Array.isArray(output)\n  && Object.keys(output).sort().join(',') === 'category,confidence,priority'\n  && ['billing','technical','shipping','general'].includes(output.category)\n  && ['high','normal'].includes(output.priority)\n  && typeof output.confidence === 'number' && Number.isFinite(output.confidence)\n  && output.confidence >= 0 && output.confidence <= 1;\nif (!valid) return [{json:{ready:true,http_status:502,response:{ok:false,error:'invalid_classifier_output',ticket_id:item.ticket.ticket_id}}}];\nconst routes = {billing:'billing_queue',technical:'technical_queue',shipping:'shipping_queue',general:'manual_review'};\nconst queue = output.confidence < 0.7 ? 'manual_review' : routes[output.category];\nreturn [{json:{ready:true,http_status:200,response:{ok:true,ticket_id:item.ticket.ticket_id,category:output.category,priority:output.priority,queue,confidence:output.confidence,classification_source:'deterministic_stub'}}}];\n"
+      },
+      "id": "route",
+      "name": "Validate Output and Route",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        780,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json.response }}",
+        "options": {
+          "responseCode": "={{ $json.http_status }}"
+        }
+      },
+      "id": "respond",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        1040,
+        0
+      ]
+    }
+  ],
+  "connections": {
+    "Support Webhook": {
+      "main": [
+        [
+          {
+            "node": "Validate Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Input": {
+      "main": [
+        [
+          {
+            "node": "Simulated Classifier",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simulated Classifier": {
+      "main": [
+        [
+          {
+            "node": "Validate Output and Route",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Output and Route": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "active": false,
+  "pinData": {},
+  "tags": []
+}

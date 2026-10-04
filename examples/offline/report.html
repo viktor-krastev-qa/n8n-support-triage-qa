@@ -1,0 +1,219 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><title>Support triage QA</title>
+<style>body{font:16px system-ui;margin:30px}table{border-collapse:collapse;width:100%}th,td{padding:10px;border:1px solid #ccd;text-align:left;vertical-align:top}td{white-space:pre-wrap}th{background:#e9eef7}</style>
+<h1>n8n Support Triage QA</h1><p>Deterministic classifier simulation. Offline mode executes Code-node logic only; webhook mode tests the actual n8n endpoint.</p><pre>{
+  &quot;mode&quot;: &quot;offline&quot;,
+  &quot;summary&quot;: {
+    &quot;total&quot;: 32,
+    &quot;pass&quot;: 32,
+    &quot;fail&quot;: 0,
+    &quot;error&quot;: 0
+  }
+}</pre><table><tr><th>Case</th><th>Status</th><th>HTTP</th><th>Response</th><th>Failures / errors</th></tr><tr><td>billing</td><td>PASS</td><td>200</td><td>{
+  &quot;ok&quot;: true,
+  &quot;ticket_id&quot;: &quot;TKT-001&quot;,
+  &quot;category&quot;: &quot;billing&quot;,
+  &quot;priority&quot;: &quot;normal&quot;,
+  &quot;queue&quot;: &quot;billing_queue&quot;,
+  &quot;confidence&quot;: 0.9,
+  &quot;classification_source&quot;: &quot;deterministic_stub&quot;
+}</td><td>[]</td></tr><tr><td>technical</td><td>PASS</td><td>200</td><td>{
+  &quot;ok&quot;: true,
+  &quot;ticket_id&quot;: &quot;TKT-001&quot;,
+  &quot;category&quot;: &quot;technical&quot;,
+  &quot;priority&quot;: &quot;normal&quot;,
+  &quot;queue&quot;: &quot;technical_queue&quot;,
+  &quot;confidence&quot;: 0.9,
+  &quot;classification_source&quot;: &quot;deterministic_stub&quot;
+}</td><td>[]</td></tr><tr><td>shipping</td><td>PASS</td><td>200</td><td>{
+  &quot;ok&quot;: true,
+  &quot;ticket_id&quot;: &quot;TKT-001&quot;,
+  &quot;category&quot;: &quot;shipping&quot;,
+  &quot;priority&quot;: &quot;normal&quot;,
+  &quot;queue&quot;: &quot;shipping_queue&quot;,
+  &quot;confidence&quot;: 0.9,
+  &quot;classification_source&quot;: &quot;deterministic_stub&quot;
+}</td><td>[]</td></tr><tr><td>general</td><td>PASS</td><td>200</td><td>{
+  &quot;ok&quot;: true,
+  &quot;ticket_id&quot;: &quot;TKT-001&quot;,
+  &quot;category&quot;: &quot;general&quot;,
+  &quot;priority&quot;: &quot;normal&quot;,
+  &quot;queue&quot;: &quot;manual_review&quot;,
+  &quot;confidence&quot;: 0.4,
+  &quot;classification_source&quot;: &quot;deterministic_stub&quot;
+}</td><td>[]</td></tr><tr><td>urgent</td><td>PASS</td><td>200</td><td>{
+  &quot;ok&quot;: true,
+  &quot;ticket_id&quot;: &quot;TKT-001&quot;,
+  &quot;category&quot;: &quot;billing&quot;,
+  &quot;priority&quot;: &quot;high&quot;,
+  &quot;queue&quot;: &quot;billing_queue&quot;,
+  &quot;confidence&quot;: 0.9,
+  &quot;classification_source&quot;: &quot;deterministic_stub&quot;
+}</td><td>[]</td></tr><tr><td>mixed_precedence</td><td>PASS</td><td>200</td><td>{
+  &quot;ok&quot;: true,
+  &quot;ticket_id&quot;: &quot;TKT-001&quot;,
+  &quot;category&quot;: &quot;billing&quot;,
+  &quot;priority&quot;: &quot;normal&quot;,
+  &quot;queue&quot;: &quot;billing_queue&quot;,
+  &quot;confidence&quot;: 0.9,
+  &quot;classification_source&quot;: &quot;deterministic_stub&quot;
+}</td><td>[]</td></tr><tr><td>uppercase</td><td>PASS</td><td>200</td><td>{
+  &quot;ok&quot;: true,
+  &quot;ticket_id&quot;: &quot;TKT-001&quot;,
+  &quot;category&quot;: &quot;technical&quot;,
+  &quot;priority&quot;: &quot;normal&quot;,
+  &quot;queue&quot;: &quot;technical_queue&quot;,
+  &quot;confidence&quot;: 0.9,
+  &quot;classification_source&quot;: &quot;deterministic_stub&quot;
+}</td><td>[]</td></tr><tr><td>word_boundaries</td><td>PASS</td><td>200</td><td>{
+  &quot;ok&quot;: true,
+  &quot;ticket_id&quot;: &quot;TKT-001&quot;,
+  &quot;category&quot;: &quot;general&quot;,
+  &quot;priority&quot;: &quot;normal&quot;,
+  &quot;queue&quot;: &quot;manual_review&quot;,
+  &quot;confidence&quot;: 0.4,
+  &quot;classification_source&quot;: &quot;deterministic_stub&quot;
+}</td><td>[]</td></tr><tr><td>trim</td><td>PASS</td><td>200</td><td>{
+  &quot;ok&quot;: true,
+  &quot;ticket_id&quot;: &quot;TKT-001&quot;,
+  &quot;category&quot;: &quot;technical&quot;,
+  &quot;priority&quot;: &quot;normal&quot;,
+  &quot;queue&quot;: &quot;technical_queue&quot;,
+  &quot;confidence&quot;: 0.9,
+  &quot;classification_source&quot;: &quot;deterministic_stub&quot;
+}</td><td>[]</td></tr><tr><td>missing_id</td><td>PASS</td><td>400</td><td>{
+  &quot;ok&quot;: false,
+  &quot;error&quot;: &quot;validation_error&quot;,
+  &quot;details&quot;: [
+    &quot;invalid_ticket_id&quot;
+  ]
+}</td><td>[]</td></tr><tr><td>bad_id</td><td>PASS</td><td>400</td><td>{
+  &quot;ok&quot;: false,
+  &quot;error&quot;: &quot;validation_error&quot;,
+  &quot;details&quot;: [
+    &quot;invalid_ticket_id&quot;
+  ]
+}</td><td>[]</td></tr><tr><td>missing_email</td><td>PASS</td><td>400</td><td>{
+  &quot;ok&quot;: false,
+  &quot;error&quot;: &quot;validation_error&quot;,
+  &quot;details&quot;: [
+    &quot;invalid_email&quot;
+  ]
+}</td><td>[]</td></tr><tr><td>bad_email</td><td>PASS</td><td>400</td><td>{
+  &quot;ok&quot;: false,
+  &quot;error&quot;: &quot;validation_error&quot;,
+  &quot;details&quot;: [
+    &quot;invalid_email&quot;
+  ]
+}</td><td>[]</td></tr><tr><td>email_number</td><td>PASS</td><td>400</td><td>{
+  &quot;ok&quot;: false,
+  &quot;error&quot;: &quot;validation_error&quot;,
+  &quot;details&quot;: [
+    &quot;invalid_email&quot;
+  ]
+}</td><td>[]</td></tr><tr><td>missing_message</td><td>PASS</td><td>400</td><td>{
+  &quot;ok&quot;: false,
+  &quot;error&quot;: &quot;validation_error&quot;,
+  &quot;details&quot;: [
+    &quot;invalid_message&quot;
+  ]
+}</td><td>[]</td></tr><tr><td>message_number</td><td>PASS</td><td>400</td><td>{
+  &quot;ok&quot;: false,
+  &quot;error&quot;: &quot;validation_error&quot;,
+  &quot;details&quot;: [
+    &quot;invalid_message&quot;
+  ]
+}</td><td>[]</td></tr><tr><td>blank</td><td>PASS</td><td>400</td><td>{
+  &quot;ok&quot;: false,
+  &quot;error&quot;: &quot;validation_error&quot;,
+  &quot;details&quot;: [
+    &quot;invalid_message&quot;
+  ]
+}</td><td>[]</td></tr><tr><td>too_short</td><td>PASS</td><td>400</td><td>{
+  &quot;ok&quot;: false,
+  &quot;error&quot;: &quot;validation_error&quot;,
+  &quot;details&quot;: [
+    &quot;invalid_message&quot;
+  ]
+}</td><td>[]</td></tr><tr><td>too_long</td><td>PASS</td><td>400</td><td>{
+  &quot;ok&quot;: false,
+  &quot;error&quot;: &quot;validation_error&quot;,
+  &quot;details&quot;: [
+    &quot;invalid_message&quot;
+  ]
+}</td><td>[]</td></tr><tr><td>extra_field</td><td>PASS</td><td>400</td><td>{
+  &quot;ok&quot;: false,
+  &quot;error&quot;: &quot;validation_error&quot;,
+  &quot;details&quot;: [
+    &quot;unknown_field&quot;
+  ]
+}</td><td>[]</td></tr><tr><td>null_body</td><td>PASS</td><td>400</td><td>{
+  &quot;ok&quot;: false,
+  &quot;error&quot;: &quot;validation_error&quot;,
+  &quot;details&quot;: [
+    &quot;body_must_be_object&quot;
+  ]
+}</td><td>[]</td></tr><tr><td>array_body</td><td>PASS</td><td>400</td><td>{
+  &quot;ok&quot;: false,
+  &quot;error&quot;: &quot;validation_error&quot;,
+  &quot;details&quot;: [
+    &quot;body_must_be_object&quot;
+  ]
+}</td><td>[]</td></tr><tr><td>string_body</td><td>PASS</td><td>400</td><td>{
+  &quot;ok&quot;: false,
+  &quot;error&quot;: &quot;validation_error&quot;,
+  &quot;details&quot;: [
+    &quot;body_must_be_object&quot;
+  ]
+}</td><td>[]</td></tr><tr><td>min_boundary</td><td>PASS</td><td>200</td><td>{
+  &quot;ok&quot;: true,
+  &quot;ticket_id&quot;: &quot;TKT-001&quot;,
+  &quot;category&quot;: &quot;general&quot;,
+  &quot;priority&quot;: &quot;normal&quot;,
+  &quot;queue&quot;: &quot;manual_review&quot;,
+  &quot;confidence&quot;: 0.4,
+  &quot;classification_source&quot;: &quot;deterministic_stub&quot;
+}</td><td>[]</td></tr><tr><td>max_boundary</td><td>PASS</td><td>200</td><td>{
+  &quot;ok&quot;: true,
+  &quot;ticket_id&quot;: &quot;TKT-001&quot;,
+  &quot;category&quot;: &quot;general&quot;,
+  &quot;priority&quot;: &quot;normal&quot;,
+  &quot;queue&quot;: &quot;manual_review&quot;,
+  &quot;confidence&quot;: 0.4,
+  &quot;classification_source&quot;: &quot;deterministic_stub&quot;
+}</td><td>[]</td></tr><tr><td>no_fault_control_in_main</td><td>PASS</td><td>400</td><td>{
+  &quot;ok&quot;: false,
+  &quot;error&quot;: &quot;validation_error&quot;,
+  &quot;details&quot;: [
+    &quot;unknown_field&quot;
+  ]
+}</td><td>[]</td></tr><tr><td>injection_text</td><td>PASS</td><td>200</td><td>{
+  &quot;ok&quot;: true,
+  &quot;ticket_id&quot;: &quot;TKT-001&quot;,
+  &quot;category&quot;: &quot;billing&quot;,
+  &quot;priority&quot;: &quot;normal&quot;,
+  &quot;queue&quot;: &quot;billing_queue&quot;,
+  &quot;confidence&quot;: 0.9,
+  &quot;classification_source&quot;: &quot;deterministic_stub&quot;
+}</td><td>[]</td></tr><tr><td>fault_unavailable</td><td>PASS</td><td>503</td><td>{
+  &quot;ok&quot;: false,
+  &quot;error&quot;: &quot;classifier_unavailable&quot;,
+  &quot;ticket_id&quot;: &quot;TKT-001&quot;
+}</td><td>[]</td></tr><tr><td>fault_invalid_json</td><td>PASS</td><td>502</td><td>{
+  &quot;ok&quot;: false,
+  &quot;error&quot;: &quot;invalid_classifier_output&quot;,
+  &quot;ticket_id&quot;: &quot;TKT-001&quot;
+}</td><td>[]</td></tr><tr><td>fault_invalid_label</td><td>PASS</td><td>502</td><td>{
+  &quot;ok&quot;: false,
+  &quot;error&quot;: &quot;invalid_classifier_output&quot;,
+  &quot;ticket_id&quot;: &quot;TKT-001&quot;
+}</td><td>[]</td></tr><tr><td>fault_invalid_confidence</td><td>PASS</td><td>502</td><td>{
+  &quot;ok&quot;: false,
+  &quot;error&quot;: &quot;invalid_classifier_output&quot;,
+  &quot;ticket_id&quot;: &quot;TKT-001&quot;
+}</td><td>[]</td></tr><tr><td>fault_unsupported</td><td>PASS</td><td>400</td><td>{
+  &quot;ok&quot;: false,
+  &quot;error&quot;: &quot;validation_error&quot;,
+  &quot;details&quot;: [
+    &quot;invalid_simulation&quot;
+  ]
+}</td><td>[]</td></tr></table></html>
